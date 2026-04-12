@@ -86,12 +86,13 @@ export default function Hero() {
         </div>
 
         <div style={{
-          display: 'flex',
-          gap: 0,
-          justifyContent: 'center',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
           borderTop: '1px solid rgba(255,255,255,0.1)',
           paddingTop: 40,
-          flexWrap: 'wrap',
+          width: '100%',
+          maxWidth: 640,
+          margin: '0 auto',
         }}>
           {[
             { value: '1,728', label: 'Institutions monitored' },
@@ -100,9 +101,9 @@ export default function Hero() {
             { value: '5.6×', label: 'Mean probability separation' },
           ].map((stat, i) => (
             <div key={i} style={{
-              padding: '0 36px',
               borderRight: i < 3 ? '1px solid rgba(255,255,255,0.1)' : 'none',
               textAlign: 'center',
+              padding: '0 12px',
             }}>
               <div style={{
                 fontSize: 28, fontWeight: 700, color: 'white',
@@ -114,6 +115,7 @@ export default function Hero() {
               <div style={{
                 fontSize: 13, color: 'rgba(255,255,255,0.5)',
                 fontWeight: 400,
+                lineHeight: 1.4,
               }}>
                 {stat.label}
               </div>

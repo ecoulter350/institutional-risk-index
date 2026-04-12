@@ -1,3 +1,40 @@
+const requestCounts = new Map()
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // Rate limit: 10 requests per IP per minute
+  const origin = req.headers.origin
+  const allowedOrigins = [
+    'https://institutional-risk-index.vercel.app',
+    'http://localhost:3000'
+  ]
+  if (origin && !allowedOrigins.includes(origin)) {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
+
+  // Rate limit: 10 requests per IP per minute
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+  const now = Date.now()
+  const windowMs = 60 * 1000
+  const limit = 10
+
+  if (!requestCounts.has(ip)) {
+    requestCounts.set(ip, [])
+  }
+  const timestamps = requestCounts.get(ip).filter(t => now - t < windowMs)
+  timestamps.push(now)
+  requestCounts.set(ip, timestamps)
+
+  if (timestamps.length > limit) {
+    return res.status(429).json({ error: 'Too many requests. Please wait a minute and try again.' })
+  }
+
+  const { institution, audience } = req.body
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -7,6 +44,12 @@ export default async function handler(req, res) {
 
   if (!institution) {
     return res.status(400).json({ error: 'Institution data required' })
+  }
+
+  const validInstitutions = require('../../data/institutions.json')
+  const validUnitIds = new Set(validInstitutions.map(i => i.unitid))
+  if (!institution.unitid || !validUnitIds.has(institution.unitid)) {
+    return res.status(400).json({ error: 'Invalid institution' })
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY
@@ -26,6 +69,7 @@ export default async function handler(req, res) {
     return map[tier] || tier
   }
 
+  
   const systemPrompt = `You are an analyst for the Institutional Risk Index (IRI), a data-driven early warning system for higher education institutional closure risk. You generate structured institutional health briefs grounded strictly in provided quantitative data.
 
 Your briefs are based on a five-model predictive system trained on IPEDS data from 1,728 four-year public and private nonprofit institutions, validated against 31 confirmed closures from 2019-2025. The XGBoost model achieved a cross-validated AUC of 0.818.
