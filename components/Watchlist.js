@@ -40,6 +40,7 @@ export default function Watchlist() {
   const [stateFilter, setStateFilter] = useState('All')
   const [sortBy, setSortBy] = useState('xgb_prob')
   const [page, setPage] = useState(0)
+  const [search, setSearch] = useState('')
   const PER_PAGE = 20
 
   const fmt = (v) => {
@@ -47,10 +48,11 @@ export default function Watchlist() {
     return (v * 100).toFixed(1) + '%'
   }
 
-  const filtered = useMemo(() => {
+ const filtered = useMemo(() => {
     return institutions
       .filter(i => tierFilter === 'All' || i.xgb_tier === tierFilter)
       .filter(i => stateFilter === 'All' || i.state_abbr === stateFilter)
+      .filter(i => !search || i.inst_name.toLowerCase().includes(search.toLowerCase()))
       .sort((a, b) => {
         if (sortBy === 'xgb_prob') return (b.xgb_prob || 0) - (a.xgb_prob || 0)
         if (sortBy === 'stress_score') return (b.stress_score || 0) - (a.stress_score || 0)
@@ -128,6 +130,22 @@ export default function Watchlist() {
           </div>
 
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                 <input
+              type="text"
+              placeholder="Search institutions..."
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(0) }}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid var(--border)',
+                borderRadius: 7,
+                fontSize: 13,
+                color: 'var(--text-primary)',
+                background: 'white',
+                width: 220,
+                outline: 'none',
+              }}
+            />
             <select
               value={tierFilter}
               onChange={e => { setTierFilter(e.target.value); setPage(0) }}
