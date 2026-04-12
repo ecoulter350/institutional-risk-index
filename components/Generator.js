@@ -116,7 +116,7 @@ export default function Generator() {
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(null)
   const [showDropdown, setShowDropdown] = useState(false)
-  const [audience, setAudience] = useState('general')
+  const audience = 'general'
   const [loading, setLoading] = useState(false)
   const [brief, setBrief] = useState(null)
   const [error, setError] = useState(null)
@@ -379,44 +379,7 @@ export default function Generator() {
               </div>
             )}
 
-            <div style={{ marginBottom: 20 }}>
-              <label style={{
-                display: 'block', fontSize: 13,
-                fontWeight: 600, color: 'var(--text-primary)',
-                marginBottom: 10,
-              }}>
-                Brief audience
-              </label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[
-                  { value: 'general', label: 'General audience' },
-                  { value: 'endowment', label: 'Endowment manager' },
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => { setAudience(opt.value); setBrief(null) }}
-                    style={{
-                      flex: 1,
-                      padding: '9px 12px',
-                      fontSize: 13,
-                      fontWeight: 500,
-                      borderRadius: 7,
-                      border: audience === opt.value
-                        ? '1.5px solid var(--navy)'
-                        : '1px solid var(--border)',
-                      background: audience === opt.value
-                        ? 'var(--navy-pale)' : 'white',
-                      color: audience === opt.value
-                        ? 'var(--navy)' : 'var(--text-secondary)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+
 
             <button
               onClick={handleGenerate}

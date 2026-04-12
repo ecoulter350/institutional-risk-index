@@ -31,8 +31,8 @@ const models = [
     number: '05',
     name: 'XGBoost',
     description: 'A gradient-boosted machine learning model trained on 19 features including seven stress indicators and institutional characteristics. Cross-validated AUC of 0.818. All 31 closed schools score Critical (≥50% probability), with mean closed school probability of 83.1% versus 14.9% for live institutions — a 5.6× separation.',
-    metric: 'CV AUC 0.818',
-    metricLabel: 'Best model',
+    metric: '733 institutions flagged',
+    metricLabel: 'Probability ≥ 10% · best performing model',
     highlight: true,
   },
 ]
