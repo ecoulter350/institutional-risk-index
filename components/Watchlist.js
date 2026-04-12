@@ -60,7 +60,7 @@ export default function Watchlist() {
         if (sortBy === 'inst_name') return a.inst_name.localeCompare(b.inst_name)
         return 0
       })
-  }, [tierFilter, stateFilter, sortBy])
+  }, [tierFilter, stateFilter, sortBy, search])
 
   const paginated = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE)
   const totalPages = Math.ceil(filtered.length / PER_PAGE)
