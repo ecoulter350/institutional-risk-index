@@ -62,31 +62,7 @@ export default function Nav() {
               {section}
             </a>
           ))}
-          <a
-            href="https://github.com/ecoulter350"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              marginLeft: 8,
-              padding: '6px 14px',
-              fontSize: 13,
-              color: 'var(--navy)',
-              border: '1px solid var(--border)',
-              borderRadius: 6,
-              fontWeight: 500,
-              transition: 'all 0.15s',
-            }}
-            onMouseEnter={e => {
-              e.target.style.background = 'var(--navy-pale)'
-              e.target.style.borderColor = 'var(--navy-light)'
-            }}
-            onMouseLeave={e => {
-              e.target.style.background = 'transparent'
-              e.target.style.borderColor = 'var(--border)'
-            }}
-          >
-            GitHub
-          </a>
+         
         </div>
       </div>
     </nav>

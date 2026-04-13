@@ -80,7 +80,7 @@ export default function Footer() {
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
-                { label: 'GitHub', href: 'https://github.com/ecoulter350' },
+                { label: 'GitHub', href: 'https://github.com/ecoulter350/institutional-risk-index' },
               ].map(link => (
                 <a key={link.label} href={link.href}
                   target="_blank" rel="noopener noreferrer"
