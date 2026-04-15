@@ -8,6 +8,16 @@ const tierColors = {
   Moderate: { bg: '#F0F9FF', text: '#075985', border: '#BAE6FD' },
   Low:      { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
 }
+function instSizeLabel(size) {
+  const map = {
+    1: '<1,000 students',
+    2: '1,000–4,999 students',
+    3: '5,000–9,999 students',
+    4: '10,000–19,999 students',
+    5: '>20,000 students',
+  }
+  return map[size] || ''
+}
 
 function TierBadge({ tier }) {
   const c = tierColors[tier] || tierColors.Moderate
@@ -285,7 +295,7 @@ export default function Generator({ selectedInstitution }) {
                             {inst.inst_name}
                           </div>
                           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                            {inst.state_abbr} · {inst.inst_size}
+                            {inst.state_abbr}{instSizeLabel(inst.inst_size) ? ' · ' + instSizeLabel(inst.inst_size) : ''}
                           </div>
                         </div>
                         <TierBadge tier={inst.xgb_tier} />
@@ -314,7 +324,7 @@ export default function Generator({ selectedInstitution }) {
                       {selected.inst_name}
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                      {selected.state_abbr} · {selected.inst_size} · {selected.xgb_tier} risk
+                      {selected.state_abbr}{instSizeLabel(selected.inst_size) ? ' · ' + instSizeLabel(selected.inst_size) : ''} · {selected.xgb_tier} risk
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
