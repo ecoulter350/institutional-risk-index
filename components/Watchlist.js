@@ -48,7 +48,7 @@ export default function Watchlist() {
     return (v * 100).toFixed(1) + '%'
   }
 
- const filtered = useMemo(() => {
+  const filtered = useMemo(() => {
     return institutions
       .filter(i => tierFilter === 'All' || i.xgb_tier === tierFilter)
       .filter(i => stateFilter === 'All' || i.state_abbr === stateFilter)
@@ -117,7 +117,7 @@ export default function Watchlist() {
               letterSpacing: '-0.02em',
               marginBottom: 8,
             }}>
-              All 1,728 institutions
+              All 1,719 institutions
             </h2>
             <p style={{
               fontSize: 14, color: 'var(--text-secondary)',
@@ -130,7 +130,7 @@ export default function Watchlist() {
           </div>
 
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                 <input
+            <input
               type="text"
               placeholder="Search institutions..."
               value={search}
@@ -247,7 +247,7 @@ export default function Watchlist() {
                     <td style={tdStyle}>
                       <div style={{ fontWeight: 500 }}>{inst.inst_name}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
-                        {inst.inst_size} · {inst.cc_basic_2021 || 'N/A'}
+                        {inst.inst_size} · {inst.sector === 1 ? 'Public' : 'Private'}
                       </div>
                     </td>
                     <td style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-secondary)' }}>
@@ -265,21 +265,21 @@ export default function Watchlist() {
                       {fmt(inst.xgb_prob)}
                     </td>
                     <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--text-secondary)' }}>
-                      {inst.stress_score !== null ? `${inst.stress_score}/7` : '—'}
+                      {inst.stress_score !== null ? `${inst.stress_score}/6` : '—'}
                     </td>
                     <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--text-secondary)' }}>
                       {inst.flags_total !== null ? `${inst.flags_total}/5` : '—'}
                     </td>
                     <td style={{
                       ...tdStyle, textAlign: 'right',
-                      color: inst.enrollment_pct_change < -0.118
+                      color: inst.enrollment_pct_change < -0.166
                         ? '#B91C1C' : 'var(--text-secondary)',
                     }}>
                       {fmt(inst.enrollment_pct_change)}
                     </td>
                     <td style={{
                       ...tdStyle, textAlign: 'right',
-                      color: inst.avg_yield_rate < 0.222
+                      color: inst.avg_yield_rate < 0.545
                         ? '#B91C1C' : 'var(--text-secondary)',
                     }}>
                       {fmt(inst.avg_yield_rate)}
