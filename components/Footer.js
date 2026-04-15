@@ -110,7 +110,7 @@ export default function Footer() {
       }}>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
           AI-generated briefs are for research purposes only.
-          Data covers 2010–2022. Finance indicators available through 2017.
+          Data covers 2018–2024.
         </p>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
           Built with Next.js · Claude API · IPEDS data
