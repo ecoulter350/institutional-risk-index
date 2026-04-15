@@ -8,6 +8,16 @@ const tierColors = {
   Moderate: { bg: '#F0F9FF', text: '#075985', border: '#BAE6FD' },
   Low:      { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
 }
+function instSizeLabel(size) {
+  const map = {
+    1: '<1,000 students',
+    2: '1,000–4,999 students',
+    3: '5,000–9,999 students',
+    4: '10,000–19,999 students',
+    5: '>20,000 students',
+  }
+  return map[size] || ''
+}
 
 function getStressColor(value, threshold, direction) {
   if (value === null || value === undefined) return '#D1D5DB'
@@ -248,7 +258,7 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <TierBadge tier={inst.xgb_tier} />
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  {inst.state_abbr} · {inst.sector === 1 ? 'Public' : 'Private'}
+                  {inst.state_abbr} · {inst.sector === 1 ? 'Public' : 'Private'}{instSizeLabel(inst.inst_size) ? ' · ' + instSizeLabel(inst.inst_size) : ''}
                 </span>
               </div>
             </div>
@@ -643,7 +653,7 @@ export default function Watchlist({ setSelectedInstitution }) {
                     <td style={tdStyle}>
                       <div style={{ fontWeight: 500 }}>{inst.inst_name}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
-                        {inst.inst_size} · {inst.sector === 1 ? 'Public' : 'Private'}
+                        {instSizeLabel(inst.inst_size)}{instSizeLabel(inst.inst_size) ? ' · ' : ''}{inst.sector === 1 ? 'Public' : 'Private'}
                       </div>
                     </td>
                     <td style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-secondary)' }}>
