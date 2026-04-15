@@ -2,49 +2,48 @@ const models = [
   {
     number: '01',
     name: 'Threshold Scoring',
-    description: 'Binary flags for each of seven stress indicators compared against empirical thresholds derived from closed school medians. Institutions scoring 3 or more flags are placed on the watchlist. Simple, interpretable, and useful as a baseline.',
-    metric: '300 institutions flagged',
-    metricLabel: 'Score ≥ 3/7',
+    description: 'Binary flags for each of six stress indicators compared against empirical thresholds derived from closed school medians. Institutions scoring 3 or more flags are placed on the watchlist. Simple, interpretable, and useful as a baseline.',
+    metric: '60 institutions flagged',
+    metricLabel: 'Score ≥ 3/6',
   },
   {
     number: '02',
     name: 'Composite Index',
-    description: 'A weighted 0–100 score where weights are proportional to each indicator\'s correlation with closure. Discount rate (53%) and grant aid percentage (11%) carry the most weight, reflecting their predictive power in the closed school validation set.',
-    metric: '12 institutions',
-    metricLabel: 'Score ≥ 40/100',
+    description: 'A weighted 0–100 score where weights are proportional to each indicator\'s correlation with closure. Operating margin (40.5%) and tuition dependency (26.9%) carry the most weight, reflecting their predictive power in the closed school validation set.',
+    metric: '47 institutions',
+    metricLabel: 'Score ≥ 60/100',
   },
   {
     number: '03',
     name: 'Logistic Regression',
-    description: 'A binary classification model estimating closure probability directly. Grant aid percentage is the only statistically significant predictor in the four-variable model (p=0.002, OR=323), confirming near-universal discounting as the strongest admissions-side signal.',
-    metric: '31 institutions',
+    description: 'A binary classification model estimating closure probability directly. Tuition dependency is the strongest statistically significant predictor (p<0.001), with yield rate and enrollment change also contributing meaningful signal. Test AUC of 0.921.',
+    metric: '107 institutions',
     metricLabel: 'Probability ≥ 5%',
   },
   {
     number: '04',
     name: 'Survival Analysis',
-    description: 'A Cox proportional hazards model treating closure as a time-to-event outcome. Concordance of 0.70 in the four-predictor specification. Grant aid shows the highest hazard ratio (HR=3.26), consistent with findings from the logistic model.',
-    metric: '777 institutions',
+    description: 'A Cox proportional hazards model treating closure as a time-to-event outcome. Concordance of 0.911. Yield rate shows the strongest effect (HR=0.007, p<0.001), with tuition dependency (HR=58.975) and operating margin also highly significant.',
+    metric: '843 institutions',
     metricLabel: 'Relative hazard ≥ 1.0',
   },
   {
     number: '05',
     name: 'XGBoost',
-    description: 'A gradient-boosted machine learning model trained on 19 features including seven stress indicators and institutional characteristics. Cross-validated AUC of 0.818. All 31 closed schools score Critical (≥50% probability), with mean closed school probability of 83.1% versus 14.9% for live institutions — a 5.6× separation.',
-    metric: '733 institutions flagged',
-    metricLabel: 'Probability ≥ 10% · best performing model',
+    description: 'A gradient-boosted machine learning model trained on 14 features including six stress indicators and institutional characteristics. Test AUC of 0.998. Mean closed school probability of 96.7% versus 2.9% for live institutions — a 33.8× separation.',
+    metric: '14 institutions',
+    metricLabel: 'Probability ≥ 50% · best performing model',
     highlight: true,
   },
 ]
 
 const indicators = [
-  { name: 'Acceptance rate', threshold: '> 73.3%', meaning: 'Open admissions signal — institution accepting nearly all applicants' },
-  { name: 'Yield rate', threshold: '< 22.2%', meaning: 'Weak demand — admitted students choosing to enroll elsewhere' },
-  { name: 'Enrollment change', threshold: '< −11.8%', meaning: 'Declining headcount — compressing tuition revenue base' },
-  { name: 'Grant aid recipients', threshold: '> 93.0%', meaning: 'Near-universal discounting — thin margin per enrolled student' },
-  { name: 'Operating margin', threshold: '< −5.0%', meaning: 'Deficit operations — expenses exceeding revenues' },
-  { name: 'Tuition dependency', threshold: '> 40.6%', meaning: 'Concentrated revenue risk — over-reliance on tuition income' },
-  { name: 'Discount rate', threshold: '> 42.5%', meaning: 'Unsustainable discounting — gross-to-net spread severely compressed' },
+  { name: 'Acceptance rate', threshold: '> 70.1%', meaning: 'Open admissions signal — institution accepting nearly all applicants' },
+  { name: 'Yield rate', threshold: '< 54.5%', meaning: 'Weak demand — admitted students choosing to enroll elsewhere' },
+  { name: 'Enrollment change', threshold: '< −16.6%', meaning: 'Declining headcount — compressing tuition revenue base' },
+  { name: 'Grant aid recipients', threshold: '> 97.5%', meaning: 'Near-universal discounting — thin margin per enrolled student' },
+  { name: 'Operating margin', threshold: '< −26.8%', meaning: 'Deficit operations — expenses exceeding revenues' },
+  { name: 'Tuition dependency', threshold: '> 82.2%', meaning: 'Concentrated revenue risk — over-reliance on tuition income' },
 ]
 
 export default function Methodology() {
@@ -76,7 +75,7 @@ export default function Methodology() {
           <p style={{
             fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.7,
           }}>
-            The IRI uses IPEDS data from 2010–2022 across 1,728 four-year public
+            The IRI uses IPEDS data from 2018–2024 across 1,719 four-year public
             and private nonprofit institutions. Each model surfaces risk signals
             from a different analytical angle. Institutions flagged by multiple
             models represent the highest-confidence watchlist entries.
@@ -160,16 +159,15 @@ export default function Methodology() {
             fontSize: 20, fontWeight: 600, color: 'var(--text-primary)',
             marginBottom: 8,
           }}>
-            Seven stress indicators
+            Six stress indicators
           </h3>
           <p style={{
             fontSize: 14, color: 'var(--text-secondary)',
             marginBottom: 28, lineHeight: 1.6,
           }}>
-            Thresholds derived from the median values of 31 confirmed closed
-            institutions. Finance indicators (operating margin, tuition
-            dependency, discount rate) are based on IPEDS finance data available
-            through 2017.
+            Thresholds derived from the median values of 44 confirmed closed
+            institutions. All indicators are calculated from IPEDS data
+            covering 2018–2024.
           </p>
           <div style={{
             display: 'grid',
