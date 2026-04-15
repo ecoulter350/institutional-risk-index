@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import institutions from '../data/institutions.json'
 
 const tierColors = {
@@ -73,9 +73,7 @@ function IndicatorRow({ label, value, threshold, stressed }) {
 
 function BriefDisplay({ brief }) {
   if (!brief) return null
-
   const sections = brief.split(/^## /m).filter(Boolean)
-
   return (
     <div style={{ marginTop: 24 }}>
       {sections.map((section, i) => {
@@ -86,8 +84,7 @@ function BriefDisplay({ brief }) {
           <div key={i} style={{
             marginBottom: 24,
             paddingBottom: 24,
-            borderBottom: i < sections.length - 1
-              ? '1px solid var(--border)' : 'none',
+            borderBottom: i < sections.length - 1 ? '1px solid var(--border)' : 'none',
           }}>
             <h4 style={{
               fontSize: 13, fontWeight: 600,
@@ -112,7 +109,7 @@ function BriefDisplay({ brief }) {
   )
 }
 
-export default function Generator() {
+export default function Generator({ selectedInstitution }) {
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(null)
   const [showDropdown, setShowDropdown] = useState(false)
@@ -120,6 +117,17 @@ export default function Generator() {
   const [loading, setLoading] = useState(false)
   const [brief, setBrief] = useState(null)
   const [error, setError] = useState(null)
+
+  // When selectedInstitution changes (from Watchlist panel), pre-populate
+  useEffect(() => {
+    if (selectedInstitution) {
+      setSelected(selectedInstitution)
+      setQuery(selectedInstitution.inst_name)
+      setShowDropdown(false)
+      setBrief(null)
+      setError(null)
+    }
+  }, [selectedInstitution])
 
   const filtered = useMemo(() => {
     if (!query || query.length < 2) return []
@@ -273,15 +281,10 @@ export default function Generator() {
                         onMouseLeave={e => e.currentTarget.style.background = 'none'}
                       >
                         <div>
-                          <div style={{
-                            fontSize: 13, fontWeight: 500,
-                            color: 'var(--text-primary)',
-                          }}>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
                             {inst.inst_name}
                           </div>
-                          <div style={{
-                            fontSize: 11, color: 'var(--text-muted)',
-                          }}>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                             {inst.state_abbr} · {inst.inst_size}
                           </div>
                         </div>
@@ -307,15 +310,10 @@ export default function Generator() {
                   marginBottom: 12,
                 }}>
                   <div>
-                    <div style={{
-                      fontSize: 14, fontWeight: 600,
-                      color: 'var(--text-primary)',
-                    }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
                       {selected.inst_name}
                     </div>
-                    <div style={{
-                      fontSize: 12, color: 'var(--text-muted)', marginTop: 2,
-                    }}>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                       {selected.state_abbr} · {selected.inst_size} · {selected.xgb_tier} risk
                     </div>
                   </div>
@@ -342,8 +340,7 @@ export default function Generator() {
                   <IndicatorRow label="Yield rate"
                     value={fmt(selected.avg_yield_rate)}
                     threshold="<54.5%"
-                    stressed={selected.avg_yield_rate !== null &&
-                               selected.avg_yield_rate < 0.545} />
+                    stressed={selected.avg_yield_rate !== null && selected.avg_yield_rate < 0.545} />
                   <IndicatorRow label="Enrollment change"
                     value={fmt(selected.enrollment_pct_change)}
                     threshold="<-16.6%"
@@ -355,23 +352,17 @@ export default function Generator() {
                   <IndicatorRow label="Operating margin"
                     value={fmt(selected.avg_operating_margin)}
                     threshold="<-26.8%"
-                    stressed={selected.avg_operating_margin !== null &&
-                               selected.avg_operating_margin < -0.268} />
+                    stressed={selected.avg_operating_margin !== null && selected.avg_operating_margin < -0.268} />
                   <IndicatorRow label="Tuition dependency"
                     value={fmt(selected.avg_tuition_dep)}
                     threshold=">82.2%"
-                    stressed={selected.avg_tuition_dep !== null &&
-                               selected.avg_tuition_dep > 0.822} />
+                    stressed={selected.avg_tuition_dep !== null && selected.avg_tuition_dep > 0.822} />
                   <div style={{
                     display: 'flex', justifyContent: 'space-between',
                     paddingTop: 10, fontSize: 12, color: 'var(--text-muted)',
                   }}>
-                    <span>Models flagging: <strong style={{
-                      color: 'var(--text-primary)',
-                    }}>{selected.models_flagged}/5</strong></span>
-                    <span>Stress score: <strong style={{
-                      color: 'var(--text-primary)',
-                    }}>{selected.stress_score}/6</strong></span>
+                    <span>Models flagging: <strong style={{ color: 'var(--text-primary)' }}>{selected.models_flagged}/5</strong></span>
+                    <span>Stress score: <strong style={{ color: 'var(--text-primary)' }}>{selected.stress_score}/6</strong></span>
                   </div>
                 </div>
               </div>
@@ -406,23 +397,15 @@ export default function Generator() {
           }}>
             {!selected && !brief && (
               <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: 360,
-                color: 'var(--text-muted)',
-                textAlign: 'center',
-                gap: 12,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                height: 360, color: 'var(--text-muted)',
+                textAlign: 'center', gap: 12,
               }}>
                 <div style={{
-                  width: 48, height: 48,
-                  background: 'var(--slate-pale)',
-                  borderRadius: 12,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 22,
+                  width: 48, height: 48, background: 'var(--slate-pale)',
+                  borderRadius: 12, display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', fontSize: 22,
                 }}>
                   📋
                 </div>
@@ -435,32 +418,23 @@ export default function Generator() {
 
             {selected && !brief && !loading && (
               <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: 360,
-                color: 'var(--text-muted)',
-                textAlign: 'center',
-                gap: 12,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                height: 360, color: 'var(--text-muted)',
+                textAlign: 'center', gap: 12,
               }}>
                 <p style={{ fontSize: 14 }}>
                   Click "Generate risk brief" to create the assessment for{' '}
-                  <strong style={{ color: 'var(--text-primary)' }}>
-                    {selected.inst_name}
-                  </strong>
+                  <strong style={{ color: 'var(--text-primary)' }}>{selected.inst_name}</strong>
                 </p>
               </div>
             )}
 
             {loading && (
               <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: 360,
-                gap: 16,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                height: 360, gap: 16,
               }}>
                 <div style={{
                   width: 32, height: 32,
@@ -469,9 +443,7 @@ export default function Generator() {
                   borderRadius: '50%',
                   animation: 'spin 0.8s linear infinite',
                 }} />
-                <p style={{
-                  fontSize: 14, color: 'var(--text-secondary)',
-                }}>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
                   Generating brief for {selected.inst_name}...
                 </p>
                 <style>{`@keyframes spin { to { transform: rotate(360deg); }}`}</style>
@@ -480,12 +452,9 @@ export default function Generator() {
 
             {error && (
               <div style={{
-                padding: '16px',
-                background: '#FEF2F2',
-                border: '1px solid #FECACA',
-                borderRadius: 8,
-                color: '#991B1B',
-                fontSize: 14,
+                padding: '16px', background: '#FEF2F2',
+                border: '1px solid #FECACA', borderRadius: 8,
+                color: '#991B1B', fontSize: 14,
               }}>
                 {error}
               </div>
@@ -494,28 +463,16 @@ export default function Generator() {
             {brief && (
               <div>
                 <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 20,
-                  paddingBottom: 16,
-                  borderBottom: '1px solid var(--border)',
+                  display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'center', marginBottom: 20,
+                  paddingBottom: 16, borderBottom: '1px solid var(--border)',
                 }}>
                   <div>
-                    <div style={{
-                      fontSize: 15, fontWeight: 600,
-                      color: 'var(--text-primary)',
-                    }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
                       {selected.inst_name}
                     </div>
-                    <div style={{
-                      fontSize: 12, color: 'var(--text-muted)', marginTop: 2,
-                    }}>
-                      {audience === 'general'
-                        ? 'General audience brief'
-                        : 'Endowment manager brief'}
-                      {' · '}
-                      Generated by Claude
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                      General audience brief · Generated by Claude
                     </div>
                   </div>
                   <TierBadge tier={selected.xgb_tier} />
