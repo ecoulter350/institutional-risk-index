@@ -70,8 +70,8 @@ The seven stress indicators and their closed-school thresholds are:
 
 RULES:
 - Only reference data explicitly provided. Never invent figures.
-- If a value is N/A, note it as unavailable and explain why (finance data gap post-2017).
-- Be direct and specific. Avoid hedging language like "may suggest" when data is clear.
+- If a value is N/A, note it as unavailable and explain why.
+- Be direct, specific, but respectful.
 - Write in plain English. No jargon without explanation.
 - Keep each section concise. Executive summary: 3 sentences max. Each other section: 4-6 sentences.`
 
