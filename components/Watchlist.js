@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import institutions from '../data/institutions.json'
 
 const tierColors = {
@@ -9,53 +9,52 @@ const tierColors = {
   Low:      { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
 }
 
-// Returns a color based on how stressed a value is relative to its threshold
-// direction: 'above' = stressed when value > threshold, 'below' = stressed when value < threshold
 function getStressColor(value, threshold, direction) {
-  if (value === null || value === undefined) return '#D1D5DB' // gray for N/A
-
-  let ratio // 0 = no stress, 1 = at threshold, >1 = past threshold
-  if (direction === 'above') {
-    ratio = value / threshold
-  } else {
-    // below: stressed when value < threshold
-    // ratio > 1 means value is below threshold (stressed)
-    ratio = threshold / Math.max(Math.abs(value), 0.0001)
-    if (threshold < 0) {
-      // for negative thresholds like operating margin < -0.268
-      // stressed when value < threshold (more negative)
-      ratio = value < threshold ? 1 + (threshold - value) / Math.abs(threshold) : threshold / Math.max(Math.abs(value), 0.0001)
-      ratio = value <= threshold ? 1.5 : value < 0 ? 0.85 : 0.5
+  if (value === null || value === undefined) return '#D1D5DB'
+  let stressed = direction === 'above' ? value > threshold : value < threshold
+  if (!stressed) {
+    // How close to threshold (0 = far, 1 = at threshold)
+    let proximity
+    if (direction === 'above') {
+      proximity = value / threshold
+    } else {
+      proximity = threshold === 0 ? 0 : Math.abs(value) / Math.abs(threshold)
     }
+    if (proximity >= 0.9) return '#075985' // close but not stressed -- blue
+    return '#166534' // healthy -- green
   }
-
-  if (ratio >= 1.3) return '#991B1B'  // Critical -- deep red
-  if (ratio >= 1.1) return '#92400E'  // High -- orange
-  if (ratio >= 0.9) return '#9A3412'  // Elevated -- amber
-  if (ratio >= 0.7) return '#075985'  // Moderate -- blue
-  return '#166534'                     // Low -- green
+  // Stressed -- how far past threshold
+  let overshoot
+  if (direction === 'above') {
+    overshoot = (value - threshold) / Math.abs(threshold)
+  } else {
+    overshoot = (threshold - value) / Math.abs(threshold || 0.01)
+  }
+  if (overshoot >= 0.3) return '#991B1B' // Critical
+  if (overshoot >= 0.15) return '#92400E' // High
+  return '#9A3412'                        // Elevated
 }
 
 function getStressBg(value, threshold, direction) {
-  if (value === null || value === undefined) return '#F3F4F6'
   const color = getStressColor(value, threshold, direction)
   const map = {
     '#991B1B': '#FEF2F2',
     '#92400E': '#FFFBEB',
     '#9A3412': '#FFF7ED',
     '#075985': '#F0F9FF',
+    '#166634': '#F0FDF4',
     '#166534': '#F0FDF4',
+    '#D1D5DB': '#F9FAFB',
   }
-  return map[color] || '#F3F4F6'
+  return map[color] || '#F9FAFB'
 }
 
-function IndicatorDot({ value, threshold, direction, label }) {
+function IndicatorDot({ value, threshold, direction, label, flipTooltip }) {
   const [hovered, setHovered] = useState(false)
   const color = getStressColor(value, threshold, direction)
-  const bg = getStressBg(value, threshold, direction)
 
   const displayVal = value !== null && value !== undefined
-    ? (Math.abs(value) < 2 ? (value * 100).toFixed(1) + '%' : value.toFixed(2))
+    ? (value * 100).toFixed(1) + '%'
     : 'N/A'
 
   return (
@@ -82,8 +81,10 @@ function IndicatorDot({ value, threshold, direction, label }) {
         <div style={{
           position: 'absolute',
           bottom: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          ...(flipTooltip
+            ? { right: '0', left: 'auto', transform: 'none' }
+            : { left: '50%', transform: 'translateX(-50%)' }
+          ),
           background: 'var(--navy)',
           color: 'white',
           fontSize: 11,
@@ -132,10 +133,7 @@ function PanelIndicatorRow({ label, value, threshold, direction, meaning }) {
   const bg = getStressBg(value, threshold, direction)
 
   return (
-    <div style={{
-      padding: '12px 0',
-      borderBottom: '1px solid var(--border)',
-    }}>
+    <div style={{ padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
       <div style={{
         display: 'flex', justifyContent: 'space-between',
         alignItems: 'flex-start', marginBottom: 3,
@@ -145,10 +143,7 @@ function PanelIndicatorRow({ label, value, threshold, direction, meaning }) {
             width: 8, height: 8, borderRadius: '50%',
             background: color, flexShrink: 0, marginTop: 2,
           }} />
-          <span style={{
-            fontSize: 13, fontWeight: 600,
-            color: 'var(--text-primary)',
-          }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
             {label}
           </span>
         </div>
@@ -163,7 +158,7 @@ function PanelIndicatorRow({ label, value, threshold, direction, meaning }) {
             {fmt(value)}
           </span>
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            {direction === 'above' ? '>' : '<'}{(threshold * 100).toFixed(1)}%
+            {direction === 'above' ? '>' : '<'}{(Math.abs(threshold) * 100).toFixed(1)}%
           </span>
         </div>
       </div>
@@ -178,6 +173,24 @@ function PanelIndicatorRow({ label, value, threshold, direction, meaning }) {
 }
 
 function SlidePanel({ inst, onClose, onGenerateBrief }) {
+  const [visible, setVisible] = useState(false)
+
+  // Trigger slide-in after mount
+  useEffect(() => {
+    if (inst) {
+      requestAnimationFrame(() => setVisible(true))
+    } else {
+      setVisible(false)
+    }
+  }, [inst])
+
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
   if (!inst) return null
 
   const fmt = (v) => {
@@ -196,6 +209,8 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
           position: 'fixed', inset: 0,
           background: 'rgba(0,0,0,0.3)',
           zIndex: 200,
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.25s ease',
         }}
       />
       {/* Panel */}
@@ -208,6 +223,8 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
         boxShadow: '-4px 0 24px rgba(0,0,0,0.12)',
         display: 'flex',
         flexDirection: 'column',
+        transform: visible ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
       }}>
         {/* Header */}
         <div style={{
@@ -239,7 +256,7 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
               onClick={onClose}
               style={{
                 background: 'none', border: 'none',
-                fontSize: 20, cursor: 'pointer',
+                fontSize: 22, cursor: 'pointer',
                 color: 'var(--text-muted)', padding: '0 4px',
                 lineHeight: 1,
               }}
@@ -272,27 +289,19 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
                 XGBoost Closure Probability
               </div>
               <div style={{
-                fontSize: 32, fontWeight: 700, color: tc.text,
-                lineHeight: 1,
+                fontSize: 32, fontWeight: 700,
+                color: tc.text, lineHeight: 1,
               }}>
                 {fmt(inst.xgb_prob)}
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{
-                fontSize: 11, color: 'var(--text-muted)',
-                marginBottom: 4,
-              }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
                 Models flagging
               </div>
-              <div style={{
-                fontSize: 24, fontWeight: 700,
-                color: 'var(--text-primary)',
-              }}>
-                {inst.models_flagged}<span style={{
-                  fontSize: 14, fontWeight: 400,
-                  color: 'var(--text-muted)',
-                }}>/5</span>
+              <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>
+                {inst.models_flagged}
+                <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>/5</span>
               </div>
             </div>
           </div>
@@ -311,43 +320,37 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
             <PanelIndicatorRow
               label="Acceptance rate"
               value={inst.avg_acceptance_rate}
-              threshold={0.701}
-              direction="above"
+              threshold={0.701} direction="above"
               meaning="Open admissions signal — institution accepting nearly all applicants"
             />
             <PanelIndicatorRow
               label="Yield rate"
               value={inst.avg_yield_rate}
-              threshold={0.545}
-              direction="below"
+              threshold={0.545} direction="below"
               meaning="Weak demand — admitted students choosing to enroll elsewhere"
             />
             <PanelIndicatorRow
               label="Enrollment change"
               value={inst.enrollment_pct_change}
-              threshold={-0.166}
-              direction="below"
+              threshold={-0.166} direction="below"
               meaning="Declining headcount — compressing tuition revenue base"
             />
             <PanelIndicatorRow
               label="Grant aid %"
               value={inst.avg_grant_pct}
-              threshold={0.975}
-              direction="above"
+              threshold={0.975} direction="above"
               meaning="Near-universal discounting — thin margin per enrolled student"
             />
             <PanelIndicatorRow
               label="Operating margin"
               value={inst.avg_operating_margin}
-              threshold={-0.268}
-              direction="below"
+              threshold={-0.268} direction="below"
               meaning="Deficit operations — expenses exceeding revenues"
             />
             <PanelIndicatorRow
               label="Tuition dependency"
               value={inst.avg_tuition_dep}
-              threshold={0.822}
-              direction="above"
+              threshold={0.822} direction="above"
               meaning="Concentrated revenue risk — over-reliance on tuition income"
             />
           </div>
@@ -371,9 +374,10 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
             {[
               { label: 'Composite score', value: inst.composite_score !== null ? inst.composite_score.toFixed(1) + '/100' : 'N/A' },
               { label: 'Cox hazard ratio', value: inst.cox_hazard !== null ? inst.cox_hazard.toFixed(2) + 'x' : 'N/A' },
-              { label: 'Logistic prob', value: inst.prob_closure_b !== null ? (inst.prob_closure_b * 100).toFixed(1) + '%' : 'N/A' },
+              { label: 'Logistic prob', value: inst.prob_closure_b !== null && inst.prob_closure_b !== undefined ? (inst.prob_closure_b * 100).toFixed(1) + '%' : 'N/A' },
               { label: 'Avg enrollment', value: inst.avg_enrollment !== null ? Math.round(inst.avg_enrollment).toLocaleString() : 'N/A' },
-              { label: 'Enrollment change', value: inst.enrollment_pct_change !== null ? (inst.enrollment_pct_change * 100).toFixed(1) + '%' : 'N/A' },
+              { label: 'First enrollment', value: inst.first_enrollment !== null ? inst.first_enrollment.toLocaleString() : 'N/A' },
+              { label: 'Last enrollment', value: inst.last_enrollment !== null ? inst.last_enrollment.toLocaleString() : 'N/A' },
             ].map(({ label, value }) => (
               <div key={label} style={{
                 display: 'flex', justifyContent: 'space-between',
@@ -666,8 +670,8 @@ export default function Watchlist({ setSelectedInstitution }) {
                     <IndicatorDot value={inst.avg_yield_rate} threshold={0.545} direction="below" label="Yield rate" />
                     <IndicatorDot value={inst.enrollment_pct_change} threshold={-0.166} direction="below" label="Enrollment change" />
                     <IndicatorDot value={inst.avg_grant_pct} threshold={0.975} direction="above" label="Grant aid %" />
-                    <IndicatorDot value={inst.avg_operating_margin} threshold={-0.268} direction="below" label="Operating margin" />
-                    <IndicatorDot value={inst.avg_tuition_dep} threshold={0.822} direction="above" label="Tuition dependency" />
+                    <IndicatorDot value={inst.avg_operating_margin} threshold={-0.268} direction="below" label="Operating margin" flipTooltip />
+                    <IndicatorDot value={inst.avg_tuition_dep} threshold={0.822} direction="above" label="Tuition dependency" flipTooltip />
                   </tr>
                 ))}
               </tbody>
