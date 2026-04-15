@@ -184,24 +184,33 @@ function PanelIndicatorRow({ label, value, threshold, direction, meaning }) {
 
 function SlidePanel({ inst, onClose, onGenerateBrief }) {
   const [visible, setVisible] = useState(false)
+  const [closing, setClosing] = useState(false)
 
   // Trigger slide-in after mount
   useEffect(() => {
     if (inst) {
+      setClosing(false)
       requestAnimationFrame(() => setVisible(true))
-    } else {
-      setVisible(false)
     }
   }, [inst])
 
+  const handleClose = () => {
+    setVisible(false)
+    setClosing(true)
+    setTimeout(() => {
+      setClosing(false)
+      onClose()
+    }, 380)
+  }
+
   // Close on Escape
   useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    const handler = (e) => { if (e.key === 'Escape') handleClose() }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [onClose])
+  }, [visible])
 
-  if (!inst) return null
+  if (!inst && !closing) return null
 
   const fmt = (v) => {
     if (v === null || v === undefined) return 'N/A'
@@ -214,13 +223,13 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
     <>
       {/* Backdrop */}
       <div
-        onClick={onClose}
+        onClick={handleClose}
         style={{
           position: 'fixed', inset: 0,
           background: 'rgba(0,0,0,0.3)',
           zIndex: 200,
           opacity: visible ? 1 : 0,
-          transition: 'opacity 0.25s ease',
+          transition: 'opacity 0.38s ease',
         }}
       />
       {/* Panel */}
@@ -234,7 +243,7 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
         display: 'flex',
         flexDirection: 'column',
         transform: visible ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+        transition: 'transform 0.38s cubic-bezier(0.32, 0.72, 0, 1)',
       }}>
         {/* Header */}
         <div style={{
@@ -263,7 +272,7 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
               </div>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               style={{
                 background: 'none', border: 'none',
                 fontSize: 22, cursor: 'pointer',
