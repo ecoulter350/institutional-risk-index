@@ -1,14 +1,104 @@
 import { useState, useMemo } from 'react'
 import institutions from '../data/institutions.json'
 
-const tierOrder = { Critical: 0, High: 1, Elevated: 2, Moderate: 3, Low: 4 }
-
 const tierColors = {
   Critical: { bg: '#FEF2F2', text: '#991B1B', border: '#FECACA' },
   High:     { bg: '#FFFBEB', text: '#92400E', border: '#FDE68A' },
   Elevated: { bg: '#FFF7ED', text: '#9A3412', border: '#FED7AA' },
   Moderate: { bg: '#F0F9FF', text: '#075985', border: '#BAE6FD' },
   Low:      { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
+}
+
+// Returns a color based on how stressed a value is relative to its threshold
+// direction: 'above' = stressed when value > threshold, 'below' = stressed when value < threshold
+function getStressColor(value, threshold, direction) {
+  if (value === null || value === undefined) return '#D1D5DB' // gray for N/A
+
+  let ratio // 0 = no stress, 1 = at threshold, >1 = past threshold
+  if (direction === 'above') {
+    ratio = value / threshold
+  } else {
+    // below: stressed when value < threshold
+    // ratio > 1 means value is below threshold (stressed)
+    ratio = threshold / Math.max(Math.abs(value), 0.0001)
+    if (threshold < 0) {
+      // for negative thresholds like operating margin < -0.268
+      // stressed when value < threshold (more negative)
+      ratio = value < threshold ? 1 + (threshold - value) / Math.abs(threshold) : threshold / Math.max(Math.abs(value), 0.0001)
+      ratio = value <= threshold ? 1.5 : value < 0 ? 0.85 : 0.5
+    }
+  }
+
+  if (ratio >= 1.3) return '#991B1B'  // Critical -- deep red
+  if (ratio >= 1.1) return '#92400E'  // High -- orange
+  if (ratio >= 0.9) return '#9A3412'  // Elevated -- amber
+  if (ratio >= 0.7) return '#075985'  // Moderate -- blue
+  return '#166534'                     // Low -- green
+}
+
+function getStressBg(value, threshold, direction) {
+  if (value === null || value === undefined) return '#F3F4F6'
+  const color = getStressColor(value, threshold, direction)
+  const map = {
+    '#991B1B': '#FEF2F2',
+    '#92400E': '#FFFBEB',
+    '#9A3412': '#FFF7ED',
+    '#075985': '#F0F9FF',
+    '#166534': '#F0FDF4',
+  }
+  return map[color] || '#F3F4F6'
+}
+
+function IndicatorDot({ value, threshold, direction, label }) {
+  const [hovered, setHovered] = useState(false)
+  const color = getStressColor(value, threshold, direction)
+  const bg = getStressBg(value, threshold, direction)
+
+  const displayVal = value !== null && value !== undefined
+    ? (Math.abs(value) < 2 ? (value * 100).toFixed(1) + '%' : value.toFixed(2))
+    : 'N/A'
+
+  return (
+    <td style={{
+      padding: '11px 8px',
+      textAlign: 'center',
+      borderBottom: '1px solid var(--border)',
+      verticalAlign: 'middle',
+      position: 'relative',
+    }}>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: 12, height: 12,
+          borderRadius: '50%',
+          background: color,
+          margin: '0 auto',
+          cursor: 'default',
+          flexShrink: 0,
+        }}
+      />
+      {hovered && (
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'var(--navy)',
+          color: 'white',
+          fontSize: 11,
+          padding: '5px 9px',
+          borderRadius: 6,
+          whiteSpace: 'nowrap',
+          zIndex: 100,
+          marginBottom: 4,
+          pointerEvents: 'none',
+        }}>
+          {label}: {displayVal}
+        </div>
+      )}
+    </td>
+  )
 }
 
 function TierBadge({ tier }) {
@@ -30,17 +120,314 @@ function TierBadge({ tier }) {
   )
 }
 
-const STATES = [...new Set(institutions.map(i => i.state_abbr)
-  .filter(Boolean))].sort()
+function PanelIndicatorRow({ label, value, threshold, direction, meaning }) {
+  const fmt = (v) => {
+    if (v === null || v === undefined) return 'N/A'
+    return (v * 100).toFixed(1) + '%'
+  }
+  const stressed = value !== null && value !== undefined && (
+    direction === 'above' ? value > threshold : value < threshold
+  )
+  const color = getStressColor(value, threshold, direction)
+  const bg = getStressBg(value, threshold, direction)
 
+  return (
+    <div style={{
+      padding: '12px 0',
+      borderBottom: '1px solid var(--border)',
+    }}>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between',
+        alignItems: 'flex-start', marginBottom: 3,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: color, flexShrink: 0, marginTop: 2,
+          }} />
+          <span style={{
+            fontSize: 13, fontWeight: 600,
+            color: 'var(--text-primary)',
+          }}>
+            {label}
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{
+            fontSize: 13, fontWeight: 700,
+            color: stressed ? color : 'var(--text-primary)',
+            background: stressed ? bg : 'transparent',
+            padding: stressed ? '1px 6px' : '0',
+            borderRadius: 4,
+          }}>
+            {fmt(value)}
+          </span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            {direction === 'above' ? '>' : '<'}{(threshold * 100).toFixed(1)}%
+          </span>
+        </div>
+      </div>
+      <p style={{
+        fontSize: 11, color: 'var(--text-muted)',
+        lineHeight: 1.5, marginLeft: 16,
+      }}>
+        {meaning}
+      </p>
+    </div>
+  )
+}
+
+function SlidePanel({ inst, onClose, onGenerateBrief }) {
+  if (!inst) return null
+
+  const fmt = (v) => {
+    if (v === null || v === undefined) return 'N/A'
+    return (v * 100).toFixed(1) + '%'
+  }
+
+  const tc = tierColors[inst.xgb_tier] || tierColors.Moderate
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.3)',
+          zIndex: 200,
+        }}
+      />
+      {/* Panel */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0,
+        width: 420,
+        background: 'white',
+        zIndex: 201,
+        overflowY: 'auto',
+        boxShadow: '-4px 0 24px rgba(0,0,0,0.12)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '20px 24px 16px',
+          borderBottom: '1px solid var(--border)',
+          position: 'sticky', top: 0,
+          background: 'white', zIndex: 1,
+        }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between',
+            alignItems: 'flex-start',
+          }}>
+            <div style={{ flex: 1, paddingRight: 12 }}>
+              <div style={{
+                fontSize: 16, fontWeight: 700,
+                color: 'var(--text-primary)',
+                lineHeight: 1.3, marginBottom: 6,
+              }}>
+                {inst.inst_name}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <TierBadge tier={inst.xgb_tier} />
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  {inst.state_abbr} · {inst.sector === 1 ? 'Public' : 'Private'}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'none', border: 'none',
+                fontSize: 20, cursor: 'pointer',
+                color: 'var(--text-muted)', padding: '0 4px',
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '20px 24px', flex: 1 }}>
+
+          {/* XGB probability */}
+          <div style={{
+            background: tc.bg,
+            border: `1px solid ${tc.border}`,
+            borderRadius: 10,
+            padding: '16px 20px',
+            marginBottom: 24,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <div>
+              <div style={{
+                fontSize: 11, fontWeight: 600,
+                color: tc.text, textTransform: 'uppercase',
+                letterSpacing: '0.07em', marginBottom: 4,
+              }}>
+                XGBoost Closure Probability
+              </div>
+              <div style={{
+                fontSize: 32, fontWeight: 700, color: tc.text,
+                lineHeight: 1,
+              }}>
+                {fmt(inst.xgb_prob)}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{
+                fontSize: 11, color: 'var(--text-muted)',
+                marginBottom: 4,
+              }}>
+                Models flagging
+              </div>
+              <div style={{
+                fontSize: 24, fontWeight: 700,
+                color: 'var(--text-primary)',
+              }}>
+                {inst.models_flagged}<span style={{
+                  fontSize: 14, fontWeight: 400,
+                  color: 'var(--text-muted)',
+                }}>/5</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stress indicators */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{
+              fontSize: 11, fontWeight: 600,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: 4,
+            }}>
+              Stress Indicators · {inst.stress_score}/6
+            </div>
+            <PanelIndicatorRow
+              label="Acceptance rate"
+              value={inst.avg_acceptance_rate}
+              threshold={0.701}
+              direction="above"
+              meaning="Open admissions signal — institution accepting nearly all applicants"
+            />
+            <PanelIndicatorRow
+              label="Yield rate"
+              value={inst.avg_yield_rate}
+              threshold={0.545}
+              direction="below"
+              meaning="Weak demand — admitted students choosing to enroll elsewhere"
+            />
+            <PanelIndicatorRow
+              label="Enrollment change"
+              value={inst.enrollment_pct_change}
+              threshold={-0.166}
+              direction="below"
+              meaning="Declining headcount — compressing tuition revenue base"
+            />
+            <PanelIndicatorRow
+              label="Grant aid %"
+              value={inst.avg_grant_pct}
+              threshold={0.975}
+              direction="above"
+              meaning="Near-universal discounting — thin margin per enrolled student"
+            />
+            <PanelIndicatorRow
+              label="Operating margin"
+              value={inst.avg_operating_margin}
+              threshold={-0.268}
+              direction="below"
+              meaning="Deficit operations — expenses exceeding revenues"
+            />
+            <PanelIndicatorRow
+              label="Tuition dependency"
+              value={inst.avg_tuition_dep}
+              threshold={0.822}
+              direction="above"
+              meaning="Concentrated revenue risk — over-reliance on tuition income"
+            />
+          </div>
+
+          {/* Additional stats */}
+          <div style={{
+            background: 'var(--slate-pale)',
+            borderRadius: 8,
+            padding: '14px 16px',
+            marginBottom: 24,
+          }}>
+            <div style={{
+              fontSize: 11, fontWeight: 600,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: 12,
+            }}>
+              Additional Metrics
+            </div>
+            {[
+              { label: 'Composite score', value: inst.composite_score !== null ? inst.composite_score.toFixed(1) + '/100' : 'N/A' },
+              { label: 'Cox hazard ratio', value: inst.cox_hazard !== null ? inst.cox_hazard.toFixed(2) + 'x' : 'N/A' },
+              { label: 'Logistic prob', value: inst.prob_closure_b !== null ? (inst.prob_closure_b * 100).toFixed(1) + '%' : 'N/A' },
+              { label: 'Avg enrollment', value: inst.avg_enrollment !== null ? Math.round(inst.avg_enrollment).toLocaleString() : 'N/A' },
+              { label: 'Enrollment change', value: inst.enrollment_pct_change !== null ? (inst.enrollment_pct_change * 100).toFixed(1) + '%' : 'N/A' },
+            ].map(({ label, value }) => (
+              <div key={label} style={{
+                display: 'flex', justifyContent: 'space-between',
+                fontSize: 13, marginBottom: 8,
+              }}>
+                <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Generate Brief button -- sticky at bottom */}
+        <div style={{
+          padding: '16px 24px',
+          borderTop: '1px solid var(--border)',
+          background: 'white',
+          position: 'sticky', bottom: 0,
+        }}>
+          <button
+            onClick={() => onGenerateBrief(inst)}
+            style={{
+              width: '100%',
+              padding: '13px',
+              background: 'var(--navy)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'opacity 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            Generate Risk Brief
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+const STATES = [...new Set(institutions.map(i => i.state_abbr).filter(Boolean))].sort()
 const TIERS = ['Critical', 'High', 'Elevated', 'Moderate', 'Low']
 
-export default function Watchlist() {
+export default function Watchlist({ setSelectedInstitution }) {
   const [tierFilter, setTierFilter] = useState('All')
   const [stateFilter, setStateFilter] = useState('All')
   const [sortBy, setSortBy] = useState('xgb_prob')
   const [page, setPage] = useState(0)
   const [search, setSearch] = useState('')
+  const [panelInst, setPanelInst] = useState(null)
   const PER_PAGE = 20
 
   const fmt = (v) => {
@@ -65,6 +452,15 @@ export default function Watchlist() {
   const paginated = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE)
   const totalPages = Math.ceil(filtered.length / PER_PAGE)
 
+  const handleGenerateBrief = (inst) => {
+    setPanelInst(null)
+    setSelectedInstitution(inst)
+    setTimeout(() => {
+      const el = document.getElementById('generator')
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  }
+
   const thStyle = {
     padding: '10px 14px',
     fontSize: 11,
@@ -85,6 +481,13 @@ export default function Watchlist() {
     color: 'var(--text-primary)',
     borderBottom: '1px solid var(--border)',
     verticalAlign: 'middle',
+  }
+
+  const indicatorThStyle = {
+    ...thStyle,
+    textAlign: 'center',
+    padding: '10px 8px',
+    cursor: 'default',
   }
 
   return (
@@ -119,13 +522,12 @@ export default function Watchlist() {
             }}>
               All 1,719 institutions
             </h2>
-            <p style={{
-              fontSize: 14, color: 'var(--text-secondary)',
-            }}>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
               Showing {filtered.length.toLocaleString()} institutions ·{' '}
               sorted by {sortBy === 'xgb_prob' ? 'XGBoost probability' :
                          sortBy === 'stress_score' ? 'stress score' :
-                         sortBy === 'flags_total' ? 'model flags' : 'name'}
+                         sortBy === 'flags_total' ? 'model flags' : 'name'} ·{' '}
+              click any row for details
             </p>
           </div>
 
@@ -150,47 +552,33 @@ export default function Watchlist() {
               value={tierFilter}
               onChange={e => { setTierFilter(e.target.value); setPage(0) }}
               style={{
-                padding: '8px 12px',
-                border: '1px solid var(--border)',
-                borderRadius: 7,
-                fontSize: 13,
-                color: 'var(--text-primary)',
-                background: 'white',
-                cursor: 'pointer',
+                padding: '8px 12px', border: '1px solid var(--border)',
+                borderRadius: 7, fontSize: 13,
+                color: 'var(--text-primary)', background: 'white', cursor: 'pointer',
               }}
             >
               <option value="All">All tiers</option>
               {TIERS.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
-
             <select
               value={stateFilter}
               onChange={e => { setStateFilter(e.target.value); setPage(0) }}
               style={{
-                padding: '8px 12px',
-                border: '1px solid var(--border)',
-                borderRadius: 7,
-                fontSize: 13,
-                color: 'var(--text-primary)',
-                background: 'white',
-                cursor: 'pointer',
+                padding: '8px 12px', border: '1px solid var(--border)',
+                borderRadius: 7, fontSize: 13,
+                color: 'var(--text-primary)', background: 'white', cursor: 'pointer',
               }}
             >
               <option value="All">All states</option>
               {STATES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-
             <select
               value={sortBy}
               onChange={e => { setSortBy(e.target.value); setPage(0) }}
               style={{
-                padding: '8px 12px',
-                border: '1px solid var(--border)',
-                borderRadius: 7,
-                fontSize: 13,
-                color: 'var(--text-primary)',
-                background: 'white',
-                cursor: 'pointer',
+                padding: '8px 12px', border: '1px solid var(--border)',
+                borderRadius: 7, fontSize: 13,
+                color: 'var(--text-primary)', background: 'white', cursor: 'pointer',
               }}
             >
               <option value="xgb_prob">Sort: XGBoost prob</option>
@@ -219,30 +607,34 @@ export default function Watchlist() {
                   </th>
                   <th style={{ ...thStyle, textAlign: 'center' }}>State</th>
                   <th style={{ ...thStyle, textAlign: 'center' }}>Tier</th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}
-                    onClick={() => setSortBy('xgb_prob')}>
+                  <th style={{ ...thStyle, textAlign: 'right' }} onClick={() => setSortBy('xgb_prob')}>
                     XGB Prob {sortBy === 'xgb_prob' ? '↓' : ''}
                   </th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}
-                    onClick={() => setSortBy('stress_score')}>
+                  <th style={{ ...thStyle, textAlign: 'right' }} onClick={() => setSortBy('stress_score')}>
                     Stress {sortBy === 'stress_score' ? '↓' : ''}
                   </th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}
-                    onClick={() => setSortBy('flags_total')}>
+                  <th style={{ ...thStyle, textAlign: 'right' }} onClick={() => setSortBy('flags_total')}>
                     Flags {sortBy === 'flags_total' ? '↓' : ''}
                   </th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>
-                    Enrollment Δ
-                  </th>
-                  <th style={{ ...thStyle, textAlign: 'right' }}>
-                    Yield
-                  </th>
+                  <th style={indicatorThStyle} title="Acceptance rate">Acc</th>
+                  <th style={indicatorThStyle} title="Yield rate">Yld</th>
+                  <th style={indicatorThStyle} title="Enrollment change">Enr</th>
+                  <th style={indicatorThStyle} title="Grant aid %">Grt</th>
+                  <th style={indicatorThStyle} title="Operating margin">Mrgn</th>
+                  <th style={indicatorThStyle} title="Tuition dependency">Tuit</th>
                 </tr>
               </thead>
               <tbody>
                 {paginated.map((inst, i) => (
-                  <tr key={inst.unitid}
-                    style={{ background: i % 2 === 0 ? 'white' : 'var(--slate-pale)' }}
+                  <tr
+                    key={inst.unitid}
+                    onClick={() => setPanelInst(inst)}
+                    style={{
+                      background: i % 2 === 0 ? 'white' : 'var(--slate-pale)',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--navy-pale)'}
+                    onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? 'white' : 'var(--slate-pale)'}
                   >
                     <td style={tdStyle}>
                       <div style={{ fontWeight: 500 }}>{inst.inst_name}</div>
@@ -270,20 +662,12 @@ export default function Watchlist() {
                     <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--text-secondary)' }}>
                       {inst.flags_total !== null ? `${inst.flags_total}/5` : '—'}
                     </td>
-                    <td style={{
-                      ...tdStyle, textAlign: 'right',
-                      color: inst.enrollment_pct_change < -0.166
-                        ? '#B91C1C' : 'var(--text-secondary)',
-                    }}>
-                      {fmt(inst.enrollment_pct_change)}
-                    </td>
-                    <td style={{
-                      ...tdStyle, textAlign: 'right',
-                      color: inst.avg_yield_rate < 0.545
-                        ? '#B91C1C' : 'var(--text-secondary)',
-                    }}>
-                      {fmt(inst.avg_yield_rate)}
-                    </td>
+                    <IndicatorDot value={inst.avg_acceptance_rate} threshold={0.701} direction="above" label="Acceptance rate" />
+                    <IndicatorDot value={inst.avg_yield_rate} threshold={0.545} direction="below" label="Yield rate" />
+                    <IndicatorDot value={inst.enrollment_pct_change} threshold={-0.166} direction="below" label="Enrollment change" />
+                    <IndicatorDot value={inst.avg_grant_pct} threshold={0.975} direction="above" label="Grant aid %" />
+                    <IndicatorDot value={inst.avg_operating_margin} threshold={-0.268} direction="below" label="Operating margin" />
+                    <IndicatorDot value={inst.avg_tuition_dep} threshold={0.822} direction="above" label="Tuition dependency" />
                   </tr>
                 ))}
               </tbody>
@@ -336,6 +720,12 @@ export default function Watchlist() {
           </div>
         </div>
       </div>
+
+      <SlidePanel
+        inst={panelInst}
+        onClose={() => setPanelInst(null)}
+        onGenerateBrief={handleGenerateBrief}
+      />
     </section>
   )
 }
