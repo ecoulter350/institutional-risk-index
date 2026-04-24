@@ -369,7 +369,7 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
             <PanelIndicatorRow
               label="Tuition dependency"
               value={inst.avg_tuition_dep}
-              threshold={1.010} direction="above"
+              threshold={0.900} direction="above"
               meaning="Concentrated revenue risk — over-reliance on tuition income"
             />
           </div>
@@ -543,7 +543,7 @@ export default function Watchlist({ setSelectedInstitution }) {
               letterSpacing: '-0.02em',
               marginBottom: 8,
             }}>
-              All 1,716 institutions
+              All 1,696 institutions
             </h2>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
               Showing {filtered.length.toLocaleString()} institutions ·{' '}
@@ -690,7 +690,7 @@ export default function Watchlist({ setSelectedInstitution }) {
                     <IndicatorDot value={inst.enrollment_pct_change} threshold={-0.184} direction="below" label="Enrollment change" />
                     <IndicatorDot value={inst.avg_grant_pct} threshold={0.996} direction="above" label="Grant aid %" />
                     <IndicatorDot value={inst.avg_operating_margin} threshold={-0.504} direction="below" label="Operating margin" flipTooltip />
-                    <IndicatorDot value={inst.avg_tuition_dep} threshold={1.010} direction="above" label="Tuition dependency" flipTooltip />
+                    <IndicatorDot value={inst.avg_tuition_dep} threshold={0.900} direction="above" label="Tuition dependency" flipTooltip />
                   </tr>
                 ))}
               </tbody>
