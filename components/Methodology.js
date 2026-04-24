@@ -43,7 +43,7 @@ const indicators = [
   { name: 'Enrollment change', threshold: '< −18.4%', meaning: 'Declining headcount — compressing tuition revenue base' },
   { name: 'Grant aid recipients', threshold: '> 99.6%', meaning: 'Near-universal discounting — thin margin per enrolled student' },
   { name: 'Operating margin', threshold: '< −50.4%', meaning: 'Deficit operations — expenses exceeding revenues' },
-  { name: 'Tuition dependency', threshold: '> 101.0%', meaning: 'Concentrated revenue risk — over-reliance on tuition income' },
+  { name: 'Tuition dependency', threshold: '> 90.0%', meaning: 'Concentrated revenue risk — over-reliance on tuition income' },
 ]
 
 export default function Methodology() {
@@ -75,7 +75,7 @@ export default function Methodology() {
           <p style={{
             fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.7,
           }}>
-            The IRI uses IPEDS data from 2018–2024 across 1,716 four-year public
+            The IRI uses IPEDS data from 2018–2024 across 1,696 four-year public
             and private nonprofit institutions. Each model surfaces risk signals
             from a different analytical angle. Institutions flagged by multiple
             models represent the highest-confidence watchlist entries.
