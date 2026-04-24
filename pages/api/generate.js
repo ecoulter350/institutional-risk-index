@@ -57,7 +57,7 @@ export default async function handler(req, res) {
 
   const systemPrompt = `You are an analyst for the Institutional Risk Index (IRI), a data-driven early warning system for higher education institutional closure risk. You generate structured institutional health briefs grounded strictly in provided quantitative data.
 
-Your briefs are based on a five-model predictive system trained on IPEDS data from 1,716 four-year public and private nonprofit institutions, validated against 57 confirmed closures from 2018-2026. The logistic regression model achieved a test AUC of 0.925.
+Your briefs are based on a five-model predictive system trained on IPEDS data from 1,696 four-year public and private nonprofit institutions, validated against 57 confirmed closures from 2018-2026. The logistic regression model achieved a test AUC of 0.925.
 
 The six stress indicators and their closed-school thresholds are:
 - Acceptance rate: stress if > 71.9% (open admissions signal)
@@ -65,7 +65,7 @@ The six stress indicators and their closed-school thresholds are:
 - Enrollment change (5yr): stress if < -18.4% (declining headcount)
 - Grant aid %: stress if > 99.6% (near-universal discounting)
 - Operating margin: stress if < -50.4% (deficit operations)
-- Tuition dependency: stress if > 101.0% (revenue concentration risk)
+- Tuition dependency: stress if > 90.0% (revenue concentration risk)
 
 RULES:
 - Only reference data explicitly provided. Never invent figures.
@@ -96,7 +96,7 @@ STRESS INDICATORS (5-year averages):
 - Enrollment change: ${fmt(institution.enrollment_pct_change, true)} [threshold: <-18.4% = stress]
 - Grant aid recipients: ${fmt(institution.avg_grant_pct, true)} [threshold: >99.6% = stress]
 - Operating margin: ${institution.avg_operating_margin !== null ? fmt(institution.avg_operating_margin, true) : 'N/A'}
-- Tuition dependency: ${institution.avg_tuition_dep !== null ? fmt(institution.avg_tuition_dep, true) : 'N/A'} [threshold: >101.0% = stress]
+- Tuition dependency: ${institution.avg_tuition_dep !== null ? fmt(institution.avg_tuition_dep, true) : 'N/A'} [threshold: >90.0% = stress]
 
 Generate a brief with exactly these four sections. Use the section headers exactly as written:
 
