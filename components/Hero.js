@@ -91,7 +91,7 @@ export default function Hero() {
           margin: '0 auto',
         }}>
           {[
-            { value: '1,716', label: 'Institutions monitored' },
+            { value: '1,696', label: 'Institutions monitored' },
             { value: '57', label: 'Closed school validation set' },
             { value: '0.925', label: 'Logistic regression AUC' },
             { value: '26.7×', label: 'Mean probability separation' },
