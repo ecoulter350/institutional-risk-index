@@ -41,7 +41,7 @@ export default function Hero() {
           margin: '0 auto 40px',
         }}>
           A machine learning system for predicting college closure risk across
-          1,716 four-year institutions, validated against 57 confirmed closures
+          1,696 four-year institutions, validated against 57 confirmed closures
           from 2018–2026.
         </p>
         <div style={{
