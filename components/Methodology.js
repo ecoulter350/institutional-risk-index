@@ -16,7 +16,7 @@ const models = [
   {
     number: '03',
     name: 'Logistic Regression',
-    description: 'A binary classification model estimating closure probability directly. Tuition dependency is the strongest statistically significant predictor (p<0.001), with yield rate and enrollment change also contributing meaningful signal. Test AUC of 0.921.',
+    description: 'A binary classification model estimating closure probability directly. Tuition dependency is the strongest statistically significant predictor (p<0.001), with yield rate and enrollment change also contributing meaningful signal. Test AUC of 0.925.',
     metric: '107 institutions',
     metricLabel: 'Probability ≥ 5%',
   },
@@ -30,20 +30,20 @@ const models = [
   {
     number: '05',
     name: 'XGBoost',
-    description: 'A gradient-boosted machine learning model trained on 14 features including six stress indicators and institutional characteristics. Test AUC of 0.998. Mean closed school probability of 96.7% versus 2.9% for live institutions — a 33.8× separation.',
-    metric: '8 institutions',
+    description: 'A gradient-boosted machine learning model trained on 14 features including six stress indicators and institutional characteristics. Mean closed school probability of 96.3% versus 3.6% for live institutions — a 26.7× separation.',
+    metric: '13 institutions',
     metricLabel: 'Probability ≥ 50% · best performing model',
     highlight: true,
   },
 ]
 
 const indicators = [
-  { name: 'Acceptance rate', threshold: '> 70.1%', meaning: 'Open admissions signal — institution accepting nearly all applicants' },
-  { name: 'Yield rate', threshold: '< 54.5%', meaning: 'Weak demand — admitted students choosing to enroll elsewhere' },
-  { name: 'Enrollment change', threshold: '< −16.6%', meaning: 'Declining headcount — compressing tuition revenue base' },
-  { name: 'Grant aid recipients', threshold: '> 97.5%', meaning: 'Near-universal discounting — thin margin per enrolled student' },
-  { name: 'Operating margin', threshold: '< −26.8%', meaning: 'Deficit operations — expenses exceeding revenues' },
-  { name: 'Tuition dependency', threshold: '> 82.2%', meaning: 'Concentrated revenue risk — over-reliance on tuition income' },
+  { name: 'Acceptance rate', threshold: '> 71.9%', meaning: 'Open admissions signal — institution accepting nearly all applicants' },
+  { name: 'Yield rate', threshold: '< 45.1%', meaning: 'Weak demand — admitted students choosing to enroll elsewhere' },
+  { name: 'Enrollment change', threshold: '< −18.4%', meaning: 'Declining headcount — compressing tuition revenue base' },
+  { name: 'Grant aid recipients', threshold: '> 99.6%', meaning: 'Near-universal discounting — thin margin per enrolled student' },
+  { name: 'Operating margin', threshold: '< −50.4%', meaning: 'Deficit operations — expenses exceeding revenues' },
+  { name: 'Tuition dependency', threshold: '> 101.0%', meaning: 'Concentrated revenue risk — over-reliance on tuition income' },
 ]
 
 export default function Methodology() {
@@ -75,7 +75,7 @@ export default function Methodology() {
           <p style={{
             fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.7,
           }}>
-            The IRI uses IPEDS data from 2018–2024 across 1,719 four-year public
+            The IRI uses IPEDS data from 2018–2024 across 1,716 four-year public
             and private nonprofit institutions. Each model surfaces risk signals
             from a different analytical angle. Institutions flagged by multiple
             models represent the highest-confidence watchlist entries.
@@ -165,7 +165,7 @@ export default function Methodology() {
             fontSize: 14, color: 'var(--text-secondary)',
             marginBottom: 28, lineHeight: 1.6,
           }}>
-            Thresholds derived from the median values of 44 confirmed closed
+            Thresholds derived from the median values of 57 confirmed closed
             institutions. All indicators are calculated from IPEDS data
             covering 2018–2024.
           </p>
