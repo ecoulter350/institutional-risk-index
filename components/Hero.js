@@ -93,7 +93,7 @@ export default function Hero() {
           {[
             { value: '1,716', label: 'Institutions monitored' },
             { value: '57', label: 'Closed school validation set' },
-            { value: '0.998', label: 'XGBoost test AUC' },
+            { value: '0.925', label: 'Logistic regression AUC' },
             { value: '26.7×', label: 'Mean probability separation' },
           ].map((stat, i) => (
             <div key={i} style={{
