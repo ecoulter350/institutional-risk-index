@@ -57,16 +57,15 @@ export default async function handler(req, res) {
 
   const systemPrompt = `You are an analyst for the Institutional Risk Index (IRI), a data-driven early warning system for higher education institutional closure risk. You generate structured institutional health briefs grounded strictly in provided quantitative data.
 
-Your briefs are based on a five-model predictive system trained on IPEDS data from 1,728 four-year public and private nonprofit institutions, validated against 31 confirmed closures from 2019-2025. The XGBoost model achieved a cross-validated AUC of 0.818.
+Your briefs are based on a five-model predictive system trained on IPEDS data from 1,716 four-year public and private nonprofit institutions, validated against 57 confirmed closures from 2018-2026. The logistic regression model achieved a test AUC of 0.925.
 
-The seven stress indicators and their closed-school thresholds are:
-- Acceptance rate: stress if > 73.3% (open admissions signal)
-- Yield rate: stress if < 22.2% (weak demand signal)
-- Enrollment change (5yr): stress if < -11.8% (declining headcount)
-- Grant aid %: stress if > 93.0% (near-universal discounting)
-- Operating margin: stress if < -5.0% (deficit operations)
-- Tuition dependency: stress if > 40.6% (revenue concentration risk)
-- Discount rate: stress if > 42.5% (unsustainable discounting)
+The six stress indicators and their closed-school thresholds are:
+- Acceptance rate: stress if > 71.9% (open admissions signal)
+- Yield rate: stress if < 45.1% (weak demand signal)
+- Enrollment change (5yr): stress if < -18.4% (declining headcount)
+- Grant aid %: stress if > 99.6% (near-universal discounting)
+- Operating margin: stress if < -50.4% (deficit operations)
+- Tuition dependency: stress if > 101.0% (revenue concentration risk)
 
 RULES:
 - Only reference data explicitly provided. Never invent figures.
@@ -80,25 +79,24 @@ RULES:
 INSTITUTION DATA:
 - Name: ${institution.inst_name}
 - Location: ${institution.state_abbr}
-- Sector: ${institution.sector}
+- Sector: ${institution.sector === 1 ? 'Public' : 'Private nonprofit'}
 - Size: ${institution.inst_size} (enrollment category)
-- Carnegie Classification: ${institution.cc_basic_2021 || 'N/A'}
 
 MODEL SCORES:
 - XGBoost closure probability: ${fmt(institution.xgb_prob, true)} (${riskColor(institution.xgb_tier)})
-- Threshold stress score: ${institution.stress_score !== null ? institution.stress_score + '/7' : 'N/A'} (${institution.risk_tier || 'N/A'})
-- Composite index score: ${institution.composite_score !== null ? institution.composite_score : 'N/A'}/100 (${institution.composite_tier || 'N/A'})
+- Threshold stress score: ${institution.stress_score !== null ? institution.stress_score + '/6' : 'N/A'} (${institution.risk_tier || 'N/A'})
+- Composite index score: ${institution.composite_score !== null ? institution.composite_score.toFixed(1) : 'N/A'}/100
 - Logistic regression probability: ${fmt(institution.prob_closure_b, true)}
-- Models flagging institution: ${institution.flags_total}/5
+- Cox hazard ratio: ${institution.cox_hazard !== null ? institution.cox_hazard.toFixed(2) + 'x' : 'N/A'}
+- Models flagging institution: ${institution.models_flagged}/5
 
 STRESS INDICATORS (5-year averages):
-- Acceptance rate: ${fmt(institution.avg_acceptance_rate, true)} [threshold: >73.3% = stress]
-- Yield rate: ${fmt(institution.avg_yield_rate, true)} [threshold: <22.2% = stress]
-- Enrollment change: ${fmt(institution.enrollment_pct_change, true)} [threshold: <-11.8% = stress]
-- Grant aid recipients: ${fmt(institution.avg_grant_pct, true)} [threshold: >93.0% = stress]
-- Operating margin: ${institution.avg_operating_margin !== null ? fmt(institution.avg_operating_margin, true) : 'N/A (finance data unavailable post-2017)'}
-- Tuition dependency: ${institution.avg_tuition_dep !== null ? fmt(institution.avg_tuition_dep, true) : 'N/A'}
-- Discount rate: ${institution.avg_discount_rate !== null ? fmt(institution.avg_discount_rate, true) : 'N/A'}
+- Acceptance rate: ${fmt(institution.avg_acceptance_rate, true)} [threshold: >71.9% = stress]
+- Yield rate: ${fmt(institution.avg_yield_rate, true)} [threshold: <45.1% = stress]
+- Enrollment change: ${fmt(institution.enrollment_pct_change, true)} [threshold: <-18.4% = stress]
+- Grant aid recipients: ${fmt(institution.avg_grant_pct, true)} [threshold: >99.6% = stress]
+- Operating margin: ${institution.avg_operating_margin !== null ? fmt(institution.avg_operating_margin, true) : 'N/A'}
+- Tuition dependency: ${institution.avg_tuition_dep !== null ? fmt(institution.avg_tuition_dep, true) : 'N/A'} [threshold: >101.0% = stress]
 
 Generate a brief with exactly these four sections. Use the section headers exactly as written:
 
@@ -112,30 +110,31 @@ Generate a brief with exactly these four sections. Use the section headers exact
 [Based on the combination of indicators, describe what kind of institution this appears to be and what its pattern suggests about its near-term trajectory. Reference comparable closed institutions only if the pattern is genuinely similar. Do not speculate beyond what the data supports.]
 
 ## Comparable Institutions
-[Name 1-2 closed institutions from the validation set whose profiles most resemble this institution's, and briefly explain the resemblance. If no close comparison exists, say so clearly. Closed institutions in validation set include: Cabrini University (2024), Wells College (2024), Birmingham-Southern College (2025), Iowa Wesleyan University (2023), Cardinal Stritch University (2023), Cazenovia College (2023), MacMurray College (2021), Judson College (2021), Holy Names University (2023), Finlandia University (2023), Lincoln College (2022), and others.]`
+[Name 1-2 closed institutions from the validation set whose profiles most resemble this institution's, and briefly explain the resemblance. If no close comparison exists, say so clearly. Closed institutions in validation set include: Birmingham-Southern College (2024), Wells College (2024), Cazenovia College (2023), Medaille University (2023), Iowa Wesleyan University (2023), Cardinal Stritch University (2023), Finlandia University (2023), Holy Names University (2023), Alderson Broaddus University (2023), MacMurray College (2020), Judson College (2021), Lincoln College (2022), Marygrove College (2019), Becker College (2021), San Francisco Art Institute (2022), and others.]`
 
   const endowmentPrompt = `Generate an institutional health brief for ${institution.inst_name} for an ENDOWMENT MANAGER / INSTITUTIONAL INVESTOR AUDIENCE. Focus on financial viability, revenue model risk, and implications for bond exposure or philanthropic capital.
 
 INSTITUTION DATA:
 - Name: ${institution.inst_name}
 - Location: ${institution.state_abbr}
-- Sector: ${institution.sector}
+- Sector: ${institution.sector === 1 ? 'Public' : 'Private nonprofit'}
 - Size: ${institution.inst_size} (enrollment category)
-- Carnegie Classification: ${institution.cc_basic_2021 || 'N/A'}
 
 MODEL SCORES:
 - XGBoost closure probability: ${fmt(institution.xgb_prob, true)} (${riskColor(institution.xgb_tier)})
-- Threshold stress score: ${institution.stress_score !== null ? institution.stress_score + '/7' : 'N/A'}
-- Models flagging institution: ${institution.flags_total}/5
+- Threshold stress score: ${institution.stress_score !== null ? institution.stress_score + '/6' : 'N/A'}
+- Composite index score: ${institution.composite_score !== null ? institution.composite_score.toFixed(1) : 'N/A'}/100
+- Logistic regression probability: ${fmt(institution.prob_closure_b, true)}
+- Cox hazard ratio: ${institution.cox_hazard !== null ? institution.cox_hazard.toFixed(2) + 'x' : 'N/A'}
+- Models flagging institution: ${institution.models_flagged}/5
 
 FINANCIAL STRESS INDICATORS:
 - Acceptance rate: ${fmt(institution.avg_acceptance_rate, true)} [high = demand weakness = revenue risk]
 - Yield rate: ${fmt(institution.avg_yield_rate, true)} [low = enrollment management failure = discounting pressure]
 - Enrollment change (5yr): ${fmt(institution.enrollment_pct_change, true)} [negative = net tuition revenue declining]
 - Grant aid recipients: ${fmt(institution.avg_grant_pct, true)} [high = near-universal discounting, thin margin per student]
-- Operating margin: ${institution.avg_operating_margin !== null ? fmt(institution.avg_operating_margin, true) : 'N/A (finance data unavailable post-2017)'}
+- Operating margin: ${institution.avg_operating_margin !== null ? fmt(institution.avg_operating_margin, true) : 'N/A'}
 - Tuition dependency: ${institution.avg_tuition_dep !== null ? fmt(institution.avg_tuition_dep, true) : 'N/A'} [high = concentrated revenue risk]
-- Discount rate: ${institution.avg_discount_rate !== null ? fmt(institution.avg_discount_rate, true) : 'N/A'} [high = gross-to-net tuition spread compressed]
 
 Generate a brief with exactly these four sections:
 
@@ -143,7 +142,7 @@ Generate a brief with exactly these four sections:
 [3 sentences. Lead with the XGBoost probability and what it means for financial viability. Identify the primary revenue model vulnerability. State the bottom-line risk assessment for capital exposure.]
 
 ## Revenue Model Analysis
-[Analyze the tuition revenue model: enrollment trend + yield + discount rate together tell a story about whether net tuition revenue is growing, stable, or compressing. Operating margin and tuition dependency indicate structural resilience. Be specific about which combinations are most concerning and why.]
+[Analyze the tuition revenue model: enrollment trend + yield rate together tell a story about whether net tuition revenue is growing, stable, or compressing. Operating margin and tuition dependency indicate structural resilience. Be specific about which combinations are most concerning and why.]
 
 ## Liquidity and Closure Risk
 [Assess the probability that financial stress leads to operational disruption or closure within a 3-5 year horizon based on the indicator profile. Reference the closed school validation set where relevant. Note what additional data (endowment size, debt load, state appropriations) would sharpen the assessment.]
