@@ -22,7 +22,6 @@ export default function Hero() {
             Higher Education Research
           </span>
         </div>
-
         <h1 style={{
           fontSize: 'clamp(32px, 5vw, 52px)',
           fontWeight: 700,
@@ -33,7 +32,6 @@ export default function Hero() {
         }}>
           Institutional Risk Index
         </h1>
-
         <p style={{
           fontSize: 18,
           color: 'rgba(255,255,255,0.7)',
@@ -43,10 +41,9 @@ export default function Hero() {
           margin: '0 auto 40px',
         }}>
           A machine learning system for predicting college closure risk across
-          1,719 four-year institutions, validated against 44 confirmed closures
-          from 2017–2026.
+          1,716 four-year institutions, validated against 57 confirmed closures
+          from 2018–2026.
         </p>
-
         <div style={{
           display: 'flex',
           gap: 12,
@@ -84,7 +81,6 @@ export default function Hero() {
             View Methodology
           </a>
         </div>
-
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
@@ -95,10 +91,10 @@ export default function Hero() {
           margin: '0 auto',
         }}>
           {[
-            { value: '1,719', label: 'Institutions monitored' },
-            { value: '44', label: 'Closed school validation set' },
+            { value: '1,716', label: 'Institutions monitored' },
+            { value: '57', label: 'Closed school validation set' },
             { value: '0.998', label: 'XGBoost test AUC' },
-            { value: '33.8×', label: 'Mean probability separation' },
+            { value: '26.7×', label: 'Mean probability separation' },
           ].map((stat, i) => (
             <div key={i} style={{
               borderRight: i < 3 ? '1px solid rgba(255,255,255,0.1)' : 'none',
