@@ -339,37 +339,37 @@ function SlidePanel({ inst, onClose, onGenerateBrief }) {
             <PanelIndicatorRow
               label="Acceptance rate"
               value={inst.avg_acceptance_rate}
-              threshold={0.701} direction="above"
+              threshold={0.719} direction="above"
               meaning="Open admissions signal — institution accepting nearly all applicants"
             />
             <PanelIndicatorRow
               label="Yield rate"
               value={inst.avg_yield_rate}
-              threshold={0.545} direction="below"
+              threshold={0.451} direction="below"
               meaning="Weak demand — admitted students choosing to enroll elsewhere"
             />
             <PanelIndicatorRow
               label="Enrollment change"
               value={inst.enrollment_pct_change}
-              threshold={-0.166} direction="below"
+              threshold={-0.184} direction="below"
               meaning="Declining headcount — compressing tuition revenue base"
             />
             <PanelIndicatorRow
               label="Grant aid %"
               value={inst.avg_grant_pct}
-              threshold={0.975} direction="above"
+              threshold={0.996} direction="above"
               meaning="Near-universal discounting — thin margin per enrolled student"
             />
             <PanelIndicatorRow
               label="Operating margin"
               value={inst.avg_operating_margin}
-              threshold={-0.268} direction="below"
+              threshold={-0.504} direction="below"
               meaning="Deficit operations — expenses exceeding revenues"
             />
             <PanelIndicatorRow
               label="Tuition dependency"
               value={inst.avg_tuition_dep}
-              threshold={0.822} direction="above"
+              threshold={1.010} direction="above"
               meaning="Concentrated revenue risk — over-reliance on tuition income"
             />
           </div>
@@ -543,7 +543,7 @@ export default function Watchlist({ setSelectedInstitution }) {
               letterSpacing: '-0.02em',
               marginBottom: 8,
             }}>
-              All 1,719 institutions
+              All 1,716 institutions
             </h2>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
               Showing {filtered.length.toLocaleString()} institutions ·{' '}
@@ -685,12 +685,12 @@ export default function Watchlist({ setSelectedInstitution }) {
                     <td style={{ ...tdStyle, textAlign: 'right', color: 'var(--text-secondary)' }}>
                       {inst.flags_total !== null ? `${inst.flags_total}/5` : '—'}
                     </td>
-                    <IndicatorDot value={inst.avg_acceptance_rate} threshold={0.701} direction="above" label="Acceptance rate" />
-                    <IndicatorDot value={inst.avg_yield_rate} threshold={0.545} direction="below" label="Yield rate" />
-                    <IndicatorDot value={inst.enrollment_pct_change} threshold={-0.166} direction="below" label="Enrollment change" />
-                    <IndicatorDot value={inst.avg_grant_pct} threshold={0.975} direction="above" label="Grant aid %" />
-                    <IndicatorDot value={inst.avg_operating_margin} threshold={-0.268} direction="below" label="Operating margin" flipTooltip />
-                    <IndicatorDot value={inst.avg_tuition_dep} threshold={0.822} direction="above" label="Tuition dependency" flipTooltip />
+                    <IndicatorDot value={inst.avg_acceptance_rate} threshold={0.719} direction="above" label="Acceptance rate" />
+                    <IndicatorDot value={inst.avg_yield_rate} threshold={0.451} direction="below" label="Yield rate" />
+                    <IndicatorDot value={inst.enrollment_pct_change} threshold={-0.184} direction="below" label="Enrollment change" />
+                    <IndicatorDot value={inst.avg_grant_pct} threshold={0.996} direction="above" label="Grant aid %" />
+                    <IndicatorDot value={inst.avg_operating_margin} threshold={-0.504} direction="below" label="Operating margin" flipTooltip />
+                    <IndicatorDot value={inst.avg_tuition_dep} threshold={1.010} direction="above" label="Tuition dependency" flipTooltip />
                   </tr>
                 ))}
               </tbody>
