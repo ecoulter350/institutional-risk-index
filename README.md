@@ -2,12 +2,12 @@
 A machine learning early warning system for higher education institutional closure risk.
 
 ## Overview
-The IRI monitors 1,696 four-year public and private nonprofit institutions using IPEDS data from 2018–2024. Five predictive models — threshold scoring, composite index, logistic regression, survival analysis, and XGBoost — identify institutions exhibiting stress patterns consistent with those observed in 57 confirmed closures from 2018 to 2026.
+The IRI monitors 1,514 four-year public and private nonprofit institutions using IPEDS data from 2018–2024. Five predictive models — threshold scoring, composite index, logistic regression, survival analysis, and XGBoost — identify institutions exhibiting stress patterns consistent with those observed in 57 confirmed closures from 2018 to 2026.
 
-The logistic regression model achieves a test AUC of 0.925. The XGBoost model produces a mean closure probability of 96.3% for closed schools versus 3.6% for live institutions — a 26.7× separation.
+The logistic regression model achieves a test AUC of 0.948. The XGBoost model produces a mean closure probability of 95.8% for closed schools versus 3.7% for live institutions — a 25.6× separation.
 
 ## Features
-- **Risk Brief Generator** — AI-generated institutional health briefs for any of 1,696 institutions, powered by the Claude API.
+- **Risk Brief Generator** — AI-generated institutional health briefs for any of 1,514 institutions, powered by the Claude API.
 - **Watchlist** — Filterable, sortable table of all institutions with XGBoost probabilities, stress scores, multi-model flags, and per-indicator dot visualization. Click any row to open a detailed slide panel.
 - **Methodology** — Plain-English explanation of all five models and six stress indicators.
 
@@ -38,7 +38,7 @@ Five models are combined into a consensus watchlist:
 |-------|-----------|
 | Threshold scoring | 60 institutions flagged (score ≥ 3/6) |
 | Composite index | 47 institutions (score ≥ 60/100) |
-| Logistic regression | 107 institutions (prob ≥ 5%) · AUC 0.925 |
+| Logistic regression | 107 institutions (prob ≥ 5%) · AUC 0.948 |
 | Survival analysis | 843 institutions (hazard ≥ 1.0) · concordance 0.911 |
 | XGBoost | 13 institutions (prob ≥ 50%) · primary model |
 
@@ -51,7 +51,7 @@ Stress indicator thresholds are derived from the median values of 57 confirmed c
 | Enrollment change | < −18.4% |
 | Grant aid recipients | > 99.6% |
 | Operating margin | < −50.4% |
-| Tuition dependency | > 90.0% |
+| Tuition dependency | > 50.9% |
 
 ## Author
 Elliott Coulter — [github.com/ecoulter350](https://github.com/ecoulter350)
