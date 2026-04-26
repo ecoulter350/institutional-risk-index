@@ -41,7 +41,7 @@ export default function Hero() {
           margin: '0 auto 40px',
         }}>
           A machine learning system for predicting college closure risk across
-          1,696 four-year institutions, validated against 57 confirmed closures
+          1,514 four-year institutions, validated against 57 confirmed closures
           from 2018–2026.
         </p>
         <div style={{
@@ -91,10 +91,10 @@ export default function Hero() {
           margin: '0 auto',
         }}>
           {[
-            { value: '1,696', label: 'Institutions monitored' },
+            { value: '1,514', label: 'Institutions monitored' },
             { value: '57', label: 'Closed school validation set' },
-            { value: '0.925', label: 'Logistic regression AUC' },
-            { value: '26.7×', label: 'Mean probability separation' },
+            { value: '0.948', label: 'Logistic regression AUC' },
+            { value: '25.6×', label: 'Mean probability separation' },
           ].map((stat, i) => (
             <div key={i} style={{
               borderRight: i < 3 ? '1px solid rgba(255,255,255,0.1)' : 'none',
