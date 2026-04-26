@@ -30,7 +30,7 @@ const models = [
   {
     number: '05',
     name: 'XGBoost',
-    description: 'A gradient-boosted machine learning model trained on 14 features including six stress indicators and institutional characteristics. Mean closed school probability of 95.8% versus 3.7% for live institutions — a 25.6× separation.',
+    description: 'A gradient-boosted machine learning model trained on 14 features including six stress indicators and institutional characteristics. Mean closed school probability of 95.8% versus 3.7% for live institutions — a 16.9× separation.',
     metric: '15 institutions',
     metricLabel: 'Probability ≥ 50% · best performing model',
     highlight: true,
