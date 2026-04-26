@@ -4,7 +4,7 @@ A machine learning early warning system for higher education institutional closu
 ## Overview
 The IRI monitors 1,514 four-year public and private nonprofit institutions using IPEDS data from 2018–2024. Five predictive models — threshold scoring, composite index, logistic regression, survival analysis, and XGBoost — identify institutions exhibiting stress patterns consistent with those observed in 57 confirmed closures from 2018 to 2026.
 
-The logistic regression model achieves a test AUC of 0.948. The XGBoost model produces a mean closure probability of 95.8% for closed schools versus 3.7% for live institutions — a 25.6× separation.
+The logistic regression model achieves a test AUC of 0.948. The XGBoost model produces a mean closure probability of 95.8% for closed schools versus 3.7% for live institutions — a 16.9× separation.
 
 ## Features
 - **Risk Brief Generator** — AI-generated institutional health briefs for any of 1,514 institutions, powered by the Claude API.
@@ -40,7 +40,7 @@ Five models are combined into a consensus watchlist:
 | Composite index | 47 institutions (score ≥ 60/100) |
 | Logistic regression | 107 institutions (prob ≥ 5%) · AUC 0.948 |
 | Survival analysis | 843 institutions (hazard ≥ 1.0) · concordance 0.911 |
-| XGBoost | 13 institutions (prob ≥ 50%) · primary model |
+| XGBoost | 15 institutions (prob ≥ 50%) · LOO CV AUC 0.933 · primary model |
 
 Stress indicator thresholds are derived from the median values of 57 confirmed closed institutions:
 
