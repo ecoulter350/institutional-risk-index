@@ -93,8 +93,8 @@ export default function Hero() {
           {[
             { value: '1,514', label: 'Institutions monitored' },
             { value: '57', label: 'Closed school validation set' },
-            { value: '0.948', label: 'Logistic regression AUC' },
-            { value: '25.6×', label: 'Mean probability separation' },
+            { value: '0.933', label: 'LOO cross-validation AUC' },
+            { value: '16.9×', label: 'Mean probability separation' },
           ].map((stat, i) => (
             <div key={i} style={{
               borderRight: i < 3 ? '1px solid rgba(255,255,255,0.1)' : 'none',
