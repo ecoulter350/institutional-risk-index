@@ -16,7 +16,7 @@ const models = [
   {
     number: '03',
     name: 'Logistic Regression',
-    description: 'A binary classification model estimating closure probability directly. Tuition dependency is the strongest statistically significant predictor (p<0.001), with yield rate and enrollment change also contributing meaningful signal. Test AUC of 0.925.',
+    description: 'A binary classification model estimating closure probability directly. Tuition dependency is the strongest statistically significant predictor (p<0.001), with yield rate and enrollment change also contributing meaningful signal. Test AUC of 0.948.',
     metric: '107 institutions',
     metricLabel: 'Probability ≥ 5%',
   },
@@ -30,8 +30,8 @@ const models = [
   {
     number: '05',
     name: 'XGBoost',
-    description: 'A gradient-boosted machine learning model trained on 14 features including six stress indicators and institutional characteristics. Mean closed school probability of 96.3% versus 3.6% for live institutions — a 26.7× separation.',
-    metric: '13 institutions',
+    description: 'A gradient-boosted machine learning model trained on 14 features including six stress indicators and institutional characteristics. Mean closed school probability of 95.8% versus 3.7% for live institutions — a 25.6× separation.',
+    metric: '15 institutions',
     metricLabel: 'Probability ≥ 50% · best performing model',
     highlight: true,
   },
@@ -43,7 +43,7 @@ const indicators = [
   { name: 'Enrollment change', threshold: '< −18.4%', meaning: 'Declining headcount — compressing tuition revenue base' },
   { name: 'Grant aid recipients', threshold: '> 99.6%', meaning: 'Near-universal discounting — thin margin per enrolled student' },
   { name: 'Operating margin', threshold: '< −50.4%', meaning: 'Deficit operations — expenses exceeding revenues' },
-  { name: 'Tuition dependency', threshold: '> 90.0%', meaning: 'Concentrated revenue risk — over-reliance on tuition income' },
+  { name: 'Tuition dependency', threshold: '> 50.9%', meaning: 'Concentrated revenue risk — over-reliance on tuition income' },
 ]
 
 export default function Methodology() {
@@ -75,7 +75,7 @@ export default function Methodology() {
           <p style={{
             fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.7,
           }}>
-            The IRI uses IPEDS data from 2018–2024 across 1,696 four-year public
+            The IRI uses IPEDS data from 2018–2024 across 1,514 four-year public
             and private nonprofit institutions. Each model surfaces risk signals
             from a different analytical angle. Institutions flagged by multiple
             models represent the highest-confidence watchlist entries.
